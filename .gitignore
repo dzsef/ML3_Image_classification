@@ -1,0 +1,9 @@
+data/
+artifacts/
+outputs/
+figures/
+*.h5
+*.pth
+*.pt
+*.onnx
+__pycache__/
