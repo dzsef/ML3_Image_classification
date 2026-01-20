@@ -1,0 +1,8 @@
+numpy>=1.23
+pillow>=10.0
+h5py>=3.9
+tqdm>=4.66
+torch>=2.0
+torchvision>=0.15
+scikit-image>=0.21
+matplotlib>=3.7
