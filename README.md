@@ -23,3 +23,13 @@ python third_party/srcnn_pytorch/train.py \
   --num-epochs 50 \
   --num-workers 8 \
   --seed 123
+
+
+After you're done with the setup run:
+
+python third_party\srcnn_pytorch\test.py `
+   --weights-file outputs\srcnn_div2k_x2\x2\best.pth ` 
+   --image-file data\div2k\HR\val\0801.png `
+   --scale 
+
+or use any other png.
