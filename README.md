@@ -33,3 +33,25 @@ python third_party\srcnn_pytorch\test.py `
    --scale 
 
 or use any other png.
+
+Evaluation on DIV2K val (quantitative + qualitative):
+
+python scripts\eval_div2k.py `
+  --weights outputs\srcnn_div2k_x2\x2\best.pth `
+  --hr-dir data\div2k\HR\val `
+  --scale 2 `
+  --out-dir outputs\eval_x2 `
+  --ssim
+
+One-command runner ONLY AFTER POPULATING THE TRAIN & VAL FOLDERS WITH pngs (prepare -> train -> eval):
+
+python scripts\run_experiment.py `
+  --scale 2 `
+  --patch-size 33 `
+  --stride 64 `
+  --batch-size 16 `
+  --epochs 50 `
+  --lr 1e-4 `
+  --num-workers 8 `
+  --seed 123 `
+  --eval-ssim
