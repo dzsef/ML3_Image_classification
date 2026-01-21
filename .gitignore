@@ -2,8 +2,6 @@ data/
 artifacts/
 figures/
 *.h5
-*.pth
-*.pt
 *.onnx
 __pycache__/
 .venv/
