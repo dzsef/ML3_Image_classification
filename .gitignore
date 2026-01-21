@@ -1,6 +1,5 @@
 data/
 artifacts/
-outputs/
 figures/
 *.h5
 *.pth
