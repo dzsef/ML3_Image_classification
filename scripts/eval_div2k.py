@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageChops, ImageOps
 import torch
 import torch.backends.cudnn as cudnn
 from skimage.metrics import structural_similarity as ssim
@@ -88,24 +88,31 @@ def save_montage(records, out_path, scale, model, device):
         preds = run_model(model, device, bicubic_y)
         srcnn = make_srcnn_rgb(preds, bicubic_ycbcr)
         
+        diff = ImageChops.difference(srcnn, bicubic)
+        diff = diff.convert('L')
+        diff = diff.point(lambda p: p * 15)
+        diff_map = ImageOps.colorize(diff, black="black", mid="red", white="yellow")
+        
         lr_display = lr.resize(hr.size, resample = Image.NEAREST)
         samples.append((lr_display, hr, bicubic, srcnn))
 
     width, height = samples[0][0].size
     header_h = 24
-    montage = Image.new('RGB', (width * 4, header_h + height * len(samples)), color=(20, 20, 20))
+    montage = Image.new('RGB', (width * 5, header_h + height * len(samples)), color=(20, 20, 20))
     draw = ImageDraw.Draw(montage)
     draw.text((width * 0 + 6, 4), 'Input (LR)', fill=(230, 230, 230))
-    draw.text((width * 1 + 6, 4), 'HR', fill=(230, 230, 230))       
-    draw.text((width * 2 + 6, 4), 'Bicubic', fill=(230, 230, 230))  
-    draw.text((width * 3 + 6, 4), 'SRCNN', fill=(230, 230, 230))    
+    draw.text((width * 1 + 6, 4), 'HR', fill=(230, 230, 230))
+    draw.text((width * 2 + 6, 4), 'Bicubic', fill=(230, 230, 230))
+    draw.text((width * 3 + 6, 4), 'SRCNN', fill=(230, 230, 230))
+    draw.text((width * 4 + 6, 4), 'Diff (x15)', fill=(230, 230, 230)) 
 
     for idx, (lr_disp, hr, bicubic, srcnn) in enumerate(samples):
         y = header_h + idx * height
         montage.paste(lr_disp, (0, y))
-        montage.paste(hr,      (width * 1, y))  
-        montage.paste(bicubic, (width * 2, y)) 
-        montage.paste(srcnn,   (width * 3, y))  
+        montage.paste(hr,      (width * 1, y))
+        montage.paste(bicubic, (width * 2, y))
+        montage.paste(srcnn,   (width * 3, y))
+        montage.paste(diff_map,(width * 4, y)) 
 
     montage.save(out_path)
 
