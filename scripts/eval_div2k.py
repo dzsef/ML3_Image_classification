@@ -94,7 +94,7 @@ def save_montage(records, out_path, scale, model, device):
         diff_map = ImageOps.colorize(diff, black="black", mid="red", white="yellow")
         
         lr_display = lr.resize(hr.size, resample = Image.NEAREST)
-        samples.append((lr_display, hr, bicubic, srcnn))
+        samples.append((lr_display, hr, bicubic, srcnn, diff_map))
 
     width, height = samples[0][0].size
     header_h = 24
@@ -106,7 +106,7 @@ def save_montage(records, out_path, scale, model, device):
     draw.text((width * 3 + 6, 4), 'SRCNN', fill=(230, 230, 230))
     draw.text((width * 4 + 6, 4), 'Diff (x15)', fill=(230, 230, 230)) 
 
-    for idx, (lr_disp, hr, bicubic, srcnn) in enumerate(samples):
+    for idx, (lr_disp, hr, bicubic, srcnn, diff_map) in enumerate(samples):
         y = header_h + idx * height
         montage.paste(lr_disp, (0, y))
         montage.paste(hr,      (width * 1, y))
