@@ -96,16 +96,16 @@ def save_montage(records, out_path, scale, model, device):
     montage = Image.new('RGB', (width * 4, header_h + height * len(samples)), color=(20, 20, 20))
     draw = ImageDraw.Draw(montage)
     draw.text((width * 0 + 6, 4), 'Input (LR)', fill=(230, 230, 230))
-    draw.text((width * 0 + 6, 4), 'HR', fill=(230, 230, 230))
-    draw.text((width * 1 + 6, 4), 'Bicubic', fill=(230, 230, 230))
-    draw.text((width * 2 + 6, 4), 'SRCNN', fill=(230, 230, 230))
+    draw.text((width * 1 + 6, 4), 'HR', fill=(230, 230, 230))       
+    draw.text((width * 2 + 6, 4), 'Bicubic', fill=(230, 230, 230))  
+    draw.text((width * 3 + 6, 4), 'SRCNN', fill=(230, 230, 230))    
 
     for idx, (lr_disp, hr, bicubic, srcnn) in enumerate(samples):
         y = header_h + idx * height
         montage.paste(lr_disp, (0, y))
-        montage.paste(hr, (0, y))
-        montage.paste(bicubic, (width, y))
-        montage.paste(srcnn, (width * 2, y))
+        montage.paste(hr,      (width * 1, y))  
+        montage.paste(bicubic, (width * 2, y)) 
+        montage.paste(srcnn,   (width * 3, y))  
 
     montage.save(out_path)
 
