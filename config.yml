@@ -1,0 +1,16 @@
+# Config for scripts/run_experiment.py (flat key: value pairs)
+scale: 2
+patch_size: 33
+stride: 64
+batch_size: 16
+epochs: 50
+lr: 1e-4
+num_workers: 8
+seed: 123
+data_dir: data/div2k
+artifacts_dir: artifacts
+outputs_dir: outputs
+eval_ssim: true
+skip_prepare: false
+skip_train: false
+skip_eval: false

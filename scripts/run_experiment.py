@@ -8,8 +8,42 @@ def run(cmd):
     subprocess.run(cmd, check=True)
 
 
+def parse_simple_yaml(path):
+    config = {}
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        if ':' not in stripped:
+            raise ValueError(f'Invalid config line: {line}')
+        key, value = stripped.split(':', 1)
+        key = key.strip()
+        value = value.strip()
+        if value == '':
+            config[key] = None
+            continue
+        lower = value.lower()
+        if lower in ('true', 'false'):
+            config[key] = lower == 'true'
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            config[key] = value[1:-1]
+            continue
+        try:
+            if any(ch in value for ch in ('.', 'e', 'E')):
+                config[key] = float(value)
+            else:
+                config[key] = int(value)
+            continue
+        except ValueError:
+            config[key] = value
+    return config
+
+
 if __name__ == '__main__':
+    root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default=None)
     parser.add_argument('--scale', type=int, default=2)
     parser.add_argument('--patch-size', type=int, default=33)
     parser.add_argument('--stride', type=int, default=64)
@@ -27,7 +61,22 @@ if __name__ == '__main__':
     parser.add_argument('--eval-ssim', action='store_true')
     args = parser.parse_args()
 
-    root = Path(__file__).resolve().parents[1]
+    defaults = {
+        action.dest: parser.get_default(action.dest)
+        for action in parser._actions
+        if action.dest != 'help'
+    }
+    if args.config:
+        config_path = Path(args.config)
+        if not config_path.is_absolute():
+            config_path = root / config_path
+        config = parse_simple_yaml(config_path)
+        for key, value in config.items():
+            if key not in defaults:
+                raise KeyError(f'Unknown config key: {key}')
+            if getattr(args, key) == defaults[key]:
+                setattr(args, key, value)
+
     py = sys.executable
 
     data_dir = root / args.data_dir
