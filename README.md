@@ -64,3 +64,8 @@ python scripts\run_experiment.py `
   --num-workers 8 `
   --seed 123 `
   --eval-ssim
+
+Config file option (CLI flags still override config values):
+
+python scripts\run_experiment.py `
+  --config config.yml
