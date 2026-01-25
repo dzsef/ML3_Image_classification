@@ -1,15 +1,15 @@
 # Config for scripts/run_experiment.py (flat key: value pairs)
-scale: 2
+scale: 4
 patch_size: 33
 stride: 64
-batch_size: 16
+batch_size: 32
 epochs: 50
 lr: 1e-4
-num_workers: 8
+num_workers: 2
 seed: 123
 data_dir: data/div2k
-artifacts_dir: artifacts
-outputs_dir: outputs
+artifacts_dir: artifacts/scale_4
+outputs_dir: outputs/scale_4
 eval_ssim: true
 skip_prepare: false
 skip_train: false
