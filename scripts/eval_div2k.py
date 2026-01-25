@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageChops, ImageOps
 import torch
 import torch.backends.cudnn as cudnn
 from skimage.metrics import structural_similarity as ssim
@@ -37,7 +37,7 @@ def prepare_images(image_path, scale):
     hr = hr.resize((hr_width, hr_height), resample=Image.BICUBIC)
     lr = hr.resize((hr_width // scale, hr_height // scale), resample=Image.BICUBIC)
     bicubic = lr.resize((lr.width * scale, lr.height * scale), resample=Image.BICUBIC)
-    return hr, bicubic
+    return hr, bicubic, lr
 
 
 def to_y_channels(hr, bicubic):
@@ -83,25 +83,36 @@ def save_montage(records, out_path, scale, model, device):
         return
     samples = []
     for record in records:
-        hr, bicubic = prepare_images(record['path'], scale)
+        hr, bicubic, lr = prepare_images(record['path'], scale)
         hr_y, bicubic_y, bicubic_ycbcr = to_y_channels(hr, bicubic)
         preds = run_model(model, device, bicubic_y)
         srcnn = make_srcnn_rgb(preds, bicubic_ycbcr)
-        samples.append((hr, bicubic, srcnn))
+        
+        diff = ImageChops.difference(srcnn, bicubic)
+        diff = diff.convert('L')
+        diff = diff.point(lambda p: p * 15)
+        diff_map = ImageOps.colorize(diff, black="black", mid="red", white="yellow")
+        
+        lr_display = lr.resize(hr.size, resample = Image.NEAREST)
+        samples.append((lr_display, hr, bicubic, srcnn, diff_map))
 
     width, height = samples[0][0].size
     header_h = 24
-    montage = Image.new('RGB', (width * 3, header_h + height * len(samples)), color=(20, 20, 20))
+    montage = Image.new('RGB', (width * 5, header_h + height * len(samples)), color=(20, 20, 20))
     draw = ImageDraw.Draw(montage)
-    draw.text((width * 0 + 6, 4), 'HR', fill=(230, 230, 230))
-    draw.text((width * 1 + 6, 4), 'Bicubic', fill=(230, 230, 230))
-    draw.text((width * 2 + 6, 4), 'SRCNN', fill=(230, 230, 230))
+    draw.text((width * 0 + 6, 4), 'Input (LR)', fill=(230, 230, 230))
+    draw.text((width * 1 + 6, 4), 'HR', fill=(230, 230, 230))
+    draw.text((width * 2 + 6, 4), 'Bicubic', fill=(230, 230, 230))
+    draw.text((width * 3 + 6, 4), 'SRCNN', fill=(230, 230, 230))
+    draw.text((width * 4 + 6, 4), 'Diff (x15)', fill=(230, 230, 230)) 
 
-    for idx, (hr, bicubic, srcnn) in enumerate(samples):
+    for idx, (lr_disp, hr, bicubic, srcnn, diff_map) in enumerate(samples):
         y = header_h + idx * height
-        montage.paste(hr, (0, y))
-        montage.paste(bicubic, (width, y))
-        montage.paste(srcnn, (width * 2, y))
+        montage.paste(lr_disp, (0, y))
+        montage.paste(hr,      (width * 1, y))
+        montage.paste(bicubic, (width * 2, y))
+        montage.paste(srcnn,   (width * 3, y))
+        montage.paste(diff_map,(width * 4, y)) 
 
     montage.save(out_path)
 
@@ -140,7 +151,7 @@ if __name__ == '__main__':
 
     rows = []
     for image_path in tqdm(image_paths, desc='Evaluating', unit='img'):
-        hr, bicubic = prepare_images(image_path, args.scale)
+        hr, bicubic, _ = prepare_images(image_path, args.scale)
         hr_y, bicubic_y, bicubic_ycbcr = to_y_channels(hr, bicubic)
         preds = run_model(model, device, bicubic_y)
         psnr_bicubic, psnr_srcnn, ssim_bicubic, ssim_srcnn = compute_metrics(
