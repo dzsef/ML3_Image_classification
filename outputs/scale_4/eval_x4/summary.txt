@@ -1,0 +1,7 @@
+Images: 102
+PSNR Bicubic mean/std/min/max: 28.2088 / 4.1781 / 17.4617 / 40.0378
+PSNR SRCNN   mean/std/min/max: 29.4361 / 4.5713 / 19.0600 / 44.2780
+Delta PSNR (SRCNN - Bicubic): 1.2273
+SSIM Bicubic mean/std/min/max: 0.788230 / 0.105044 / 0.477754 / 0.983671
+SSIM SRCNN   mean/std/min/max: 0.825245 / 0.091832 / 0.537829 / 0.988859
+Delta SSIM (SRCNN - Bicubic): 0.037015
